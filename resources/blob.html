@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>blob</title>
+</head>
+<body>
+    <div class="app"><p class="text-p">这是测试数据</p></div>
+    <script>
+        // 创建text/plain的blob二进制大对象
+        const blobText = new Blob(['helloWord'], {
+            type: 'text/plain'
+        })
+
+        // 创建text/html的blob二进制大对象
+        const blobHtml = new Blob([document.querySelector('.app').innerHTML], {
+            type: 'text/html'
+        })
+        console.log(blobText, blobHtml) // // Blob {size: 9, type: 'text/plain'} // Blob {size: 40, type: 'text/html'}
+        
+        // 读取blob的内容，需要使用FileReader进行读取
+        const fileReaderText = new FileReader()
+        fileReaderText.onload = (event) => {
+            console.log('blob text输出：', event.target.result) //  helloWord
+        }
+        fileReaderText.readAsText(blobText)
+
+
+         // 读取blob的内容，需要使用FileReader进行读取
+        const fileReaderHtml = new FileReader()
+        fileReaderHtml.onload = (event) => {
+            console.log('blob html输出：', event.target.result) // <p class="text-p">这是测试数据</p>
+        }
+        fileReaderHtml.readAsText(blobHtml)
+
+        //============= 测试blob 对象的 slice方法 ============
+        const sliceHtmlBlob = blobHtml.slice(0, 6, blobHtml.type) 
+        console.log('截取之后的对象：', sliceHtmlBlob) // Blob {size: 6, type: 'text/html'}
+        
+        const fileReaderSliceHtml = new FileReader()
+        fileReaderSliceHtml.onload = (event) => {
+            console.log('blob slice html输出：', event.target.result) //  <p cla
+        }
+        fileReaderSliceHtml.readAsText(sliceHtmlBlob)
+    </script>
+</body>
+</html>

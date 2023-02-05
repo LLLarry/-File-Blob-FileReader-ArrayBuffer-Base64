@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ArrayBuffer</title>
+    <style>
+        .drag-box {
+            width: 300px;
+            height: 300px;
+            border-radius: 10px;
+            border: 1px dotted deepskyblue;
+        }
+    </style>
+</head>
+<body>
+    <h3>ArrayBuffer</h3>
+    <div class="drag-box"></div>
+    <video src="" id="video"></video>
+    <script>
+        const dragBox = document.querySelector('.drag-box')
+        const video = document.querySelector('#video')
+        dragBox.ondragover = (e) => {
+            e.preventDefault()
+        }
+        dragBox.ondrop = (e) => {
+            e.preventDefault()
+            // 拖拽的file对象
+            const file = e.dataTransfer.files[0]
+            // 复制文件
+            copyFile(file)
+            // 1、转化为临时连接
+            // console.log(file, URL.createObjectURL(file))
+            // 2、通过fileReader转化为base64位
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                // 文件大小141720和字节
+                console.log(e.target.result) // ArrayBuffer(141720)
+                
+                const arraybuffer = e.target.result
+                
+                // 有符号 每位占1个字节
+                const int8buffer = new Int8Array(arraybuffer) // Int8Array(141720) [-119, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 3, 32, 0, 0, 1, -32, 8, 6, 0, 0, 0, 93, 7, 9, -11, 0, 0, 0, 1, 115, 82, 71, 66, 0, -82, -50, 28, -23, 0, 0, 32, 0, 73, 68, 65, 84, 120, 94, -20, -99, 7, 120, 20, -27, 22, -122, -33, 36, -101, 100, 55, -69, -23, -95, -93, -128, -120, 34, 40, -94, 98, -63, 2, -40, 65, -67, -94, 98, 1, 68, 17, 69, -79, 96, 69, -63, 2, 98, -63, -118, 98, 69, …]
+                // 无符号 每位占1个字节
+                const uint8buffer = new Uint8Array(arraybuffer) // Uint8Array(141720) [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 3, 32, 0, 0, 1, 224, 8, 6, 0, 0, 0, 93, 7, 9, 245, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 32, 0, 73, 68, 65, 84, 120, 94, 236, 157, 7, 120, 20, 229, 22, 134, 223, 36, 155, 100, 55, 187, 233, 161, 163, 128, 136, 34, 40, 162, 98, 193, 2, 216, 65, 189, 162, 98, 1, 68, 17, 69, 177, 96, 69, 193, 2, 98, 193, 138, 98, 69, …]
+                // 有符号 每位占2个字节
+                const int16buffer = new Int16Array(arraybuffer) // Int16Array(70860) [20617, 18254, 2573, 2586, 0, 3328, 18505, 21060, 0, 8195, 0, -8191, 1544, 0, 23808, 2311, 245, 0, 29441, 18258, 66, -12626, -5860, 0, 32, 17481, 21569, 24184, -25108, 30727, -6892, -31210, 9439, 25755, -17609, -24087, -32605, 8840, -24024, -16030, -10238, -17087, 25250, 17409, 17681, 24753, -16059, 25090, -30015, 17762, 14257, 16448, -29756, -23926, -32216, -32246, 1416, 1105, 10921, -28611, -27682, 32205, -13122, -19738, -4924, 30566, 27795, -15498, -6244, 29409, -26155, -7, -13057, -13076, -12673, -12551, 17911, -6912, 25080, 10047, -14526, 10248, -32209, 8856, -30008, -895, 26648, 12533, -31888, -24207, 5250, -27416, 6913, -18179, 31150, -6040, -8069, 22709, -3400, -14332, …]
+                console.log(int8buffer, uint8buffer, int16buffer)
+            }
+            reader.readAsArrayBuffer(file)
+        }
+
+        // 复制文件
+        // 思路： 将file文件通过FileFeader读取为ArrayBuffer形式，由于ArrayBuffer不允许我们直接操作所以我们要使用他的TypedView来进行操作
+        // 我们封装一个通用的复制、所以我们采取按照每个字节去复制，所以 使用Int8Array类来操作二进制数据（每一项占用1个字节）
+        // 我们新建一个Int8Array实例，长度和旧的Int8Array一致
+        // 然后将就Int8Array中的每一项数据都拷贝到新的Int8Array中
+        // Int8Array.buffer获取新的ArrayBuffer
+        // new Blob([新的ArrayBuffer], { type: 'xxx' }) 获取新的blob
+        // 然后blob可以生成对应的临时连接或者base64
+        function copyFile (file) {
+            const reader = new FileReader()
+            reader.onload = (e) => {
+                console.log('e.target.result', )
+                const arrayBuffer = e.target.result
+                // arrayBuffer不能直接操作、要转化为可以操作的类数组
+            const int8Array = new Int8Array(arrayBuffer)
+            // 创建一个字节数和arrayBuffer一致的类数组 （这里使用Int8Array,就是每每次写入一个新字节）
+            const newInt8Array = new Int8Array(arrayBuffer.byteLength)
+            // 写去到新
+            for (let i = 0; i < int8Array.length; i++) {
+                // if (i < arrayBuffer.byteLength / 2) {
+                //     newInt8Array[i] = int8Array[i]
+                // }
+                newInt8Array[i] = int8Array[i]
+            }
+            // 将Int8Array转化为ArrayBuffer
+            const newArrayBuffer = newInt8Array.buffer
+            // 将ArrayBuffer转化为Blob对象
+            const blob = new Blob([newArrayBuffer], { type: file.type })
+            // 将blob对象转化为临时地址来使用
+            const onceUrl = URL.createObjectURL(blob)
+            console.log(onceUrl)
+            }
+            reader.readAsArrayBuffer(file)
+            
+            
+        }
+    </script>
+</body>
+</html>
